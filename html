@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#F5F2ED" />
+  <meta name="description" content="Dione OS – Field Notes Edition (offline-first journal)" />
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <title>Dione OS – Field Notes Edition</title>
+</head>
+
+<body>
+  <div class="app" id="appRoot" aria-live="polite">
+    <header class="topbar" id="topbar">
+      <div class="topbar__left">
+        <div class="brand">
+          <div class="brand__title">Dione OS</div>
+          <div class="brand__subtitle">Field Notes Edition</div>
+        </div>
+      </div>
+
+      <div class="topbar__right">
+        <button class="btn btn--ghost" id="btnExport" type="button" aria-label="Export JSON">EXPORT</button>
+        <label class="btn btn--ghost" for="importFile" aria-label="Import JSON">IMPORT</label>
+        <input id="importFile" class="sr-only" type="file" accept="application/json" />
+      </div>
+    </header>
+
+    <main class="main" id="main">
+      <section class="screen" id="screenDaily" data-screen="daily" aria-label="Daily log">
+        <div class="screen__head">
+          <div class="screen__title">Daily</div>
+          <div class="screen__meta" id="dailyMeta"></div>
+        </div>
+
+        <div class="card card--composer" id="dailyComposer">
+          <div class="field">
+            <label class="label" for="dailyBody">Quick entry</label>
+            <textarea id="dailyBody" class="textarea" rows="4" placeholder="Mood, coffee, sleep, reflections…"></textarea>
+          </div>
+
+          <div class="row row--wrap">
+            <div class="chipset" role="group" aria-label="Mood">
+              <button class="chip" type="button" data-mood="great">GREAT</button>
+              <button class="chip" type="button" data-mood="good">GOOD</button>
+              <button class="chip" type="button" data-mood="okay">OKAY</button>
+              <button class="chip" type="button" data-mood="off">OFF</button>
+              <button class="chip" type="button" data-mood="bad">BAD</button>
+            </div>
+
+            <button class="btn btn--tool" id="btnMoodStamp" type="button">STAMP MOOD</button>
+          </div>
+
+          <div class="row row--wrap">
+            <div class="field field--inline">
+              <label class="label" for="dailyTags">Tags</label>
+              <input id="dailyTags" class="input" type="text" placeholder="#daily, #coffee, #sleep" />
+            </div>
+          </div>
+
+          <div class="row row--wrap">
+            <div class="toggle">
+              <input id="toggleSleep" type="checkbox" />
+              <label for="toggleSleep">Sleep hours</label>
+            </div>
+            <input id="sleepHours" class="input input--mini" type="number" min="0" step="0.5" placeholder="0" disabled />
+
+            <div class="toggle">
+              <input id="toggleCoffee" type="checkbox" />
+              <label for="toggleCoffee">Coffee count</label>
+            </div>
+            <input id="coffeeCount" class="input input--mini" type="number" min="0" step="1" placeholder="0" disabled />
+
+            <div class="spacer"></div>
+            <button class="btn" id="btnDailySave" type="button">SAVE</button>
+          </div>
+        </div>
+
+        <div class="timeline" id="dailyTimeline" aria-label="Daily timeline"></div>
+      </section>
+
+      <section class="screen" id="screenProjects" data-screen="projects" aria-label="Projects">
+        <div class="screen__head">
+          <div class="screen__title">Projects</div>
+          <div class="screen__meta">Log entries by project.</div>
+        </div>
+
+        <div class="grid" id="projectGrid"></div>
+
+        <div class="card hidden" id="projectDetail">
+          <div class="projectbar">
+            <button class="btn btn--ghost" id="btnBackProjects" type="button">BACK</button>
+            <div class="projectbar__title" id="projectTitle"></div>
+            <div class="spacer"></div>
+            <button class="btn btn--tool" id="btnNewProjectEntry" type="button">NEW ENTRY</button>
+          </div>
+
+          <div class="list" id="projectEntryList" aria-label="Project entries"></div>
+        </div>
+      </section>
+
+      <section class="screen" id="screenThinking" data-screen="thinking" aria-label="Thinking pages">
+        <div class="screen__head">
+          <div class="screen__title">Thinking</div>
+          <div class="screen__meta">Long-form pages (markdown-light).</div>
+        </div>
+
+        <div class="row row--wrap">
+          <button class="btn btn--tool" id="btnNewThinking" type="button">NEW PAGE</button>
+          <button class="btn btn--tool" id="btnPrompts" type="button">PROMPTS</button>
+          <button class="btn btn--ghost" id="btnFocusToggle" type="button" aria-pressed="false">FOCUS</button>
+          <div class="spacer"></div>
+        </div>
+
+        <div class="list" id="thinkingList" aria-label="Thinking pages list"></div>
+      </section>
+
+      <section class="screen" id="screenSearch" data-screen="search" aria-label="Search">
+        <div class="screen__head">
+          <div class="screen__title">Search</div>
+          <div class="screen__meta">Find anything fast.</div>
+        </div>
+
+        <div class="card">
+          <div class="field">
+            <label class="label" for="searchQuery">Search</label>
+            <input id="searchQuery" class="input" type="text" placeholder="Type to search…" />
+          </div>
+
+          <div class="row row--wrap">
+            <div class="field field--inline">
+              <label class="label" for="filterTag">Tag</label>
+              <input id="filterTag" class="input" type="text" placeholder="#coffee" />
+            </div>
+
+            <div class="field field--inline">
+              <label class="label" for="filterMode">Mode</label>
+              <select id="filterMode" class="select">
+                <option value="">Any</option>
+                <option value="daily">Daily</option>
+                <option value="project">Project</option>
+                <option value="thinking">Thinking</option>
+              </select>
+            </div>
+
+            <div class="field field--inline">
+              <label class="label" for="filterProject">Project</label>
+              <select id="filterProject" class="select"></select>
+            </div>
+          </div>
+
+          <div class="row row--wrap">
+            <label class="toggle">
+              <input id="filterPinned" type="checkbox" />
+              <span>Pinned</span>
+            </label>
+            <label class="toggle">
+              <input id="filterStarred" type="checkbox" />
+              <span>Starred</span>
+            </label>
+
+            <div class="spacer"></div>
+            <button class="btn btn--ghost" id="btnClearSearch" type="button">CLEAR</button>
+          </div>
+        </div>
+
+        <div class="list" id="searchResults" aria-label="Search results"></div>
+      </section>
+    </main>
+
+    <nav class="bottomnav" aria-label="Bottom navigation">
+      <button class="tab is-active" type="button" data-tab="daily"><span class="tab__label">Daily</span></button>
+      <button class="tab" type="button" data-tab="projects"><span class="tab__label">Projects</span></button>
+      <button class="tab" type="button" data-tab="thinking"><span class="tab__label">Thinking</span></button>
+      <button class="tab" type="button" data-tab="search"><span class="tab__label">Search</span></button>
+    </nav>
+
+    <button class="fab" id="fab" type="button" aria-label="Quick capture">+</button>
+
+    <div class="sheet-backdrop hidden" id="sheetBackdrop" aria-hidden="true"></div>
+    <aside class="sheet hidden" id="captureSheet" aria-label="Quick capture sheet" aria-hidden="true">
+      <div class="sheet__handle" aria-hidden="true"></div>
+      <div class="sheet__title">Quick Capture</div>
+
+      <div class="sheet__grid">
+        <button class="btn btn--tool" type="button" data-capture="idea">IDEA</button>
+        <button class="btn btn--tool" type="button" data-capture="expense">EXPENSE</button>
+        <button class="btn btn--tool" type="button" data-capture="coffee">COFFEE RECIPE</button>
+        <button class="btn btn--tool" type="button" data-capture="quote">QUOTE</button>
+        <button class="btn btn--tool" type="button" data-capture="reminder">REMINDER</button>
+        <button class="btn btn--tool" type="button" data-capture="blank">BLANK</button>
+      </div>
+
+      <div class="row row--wrap sheet__footer">
+        <button class="btn btn--ghost" id="btnCloseSheet" type="button">CLOSE</button>
+      </div>
+    </aside>
+
+    <div class="modal-backdrop hidden" id="modalBackdrop" aria-hidden="true"></div>
+    <section class="modal hidden" id="editorModal" role="dialog" aria-modal="true" aria-label="Editor" aria-hidden="true">
+      <div class="modal__bar">
+        <button class="btn btn--ghost" id="btnEditorClose" type="button">CLOSE</button>
+        <div class="spacer"></div>
+        <button class="btn btn--tool" id="btnEditorPin" type="button">PIN</button>
+        <button class="btn btn--tool" id="btnEditorStar" type="button">STAR</button>
+        <button class="btn" id="btnEditorSave" type="button">SAVE</button>
+      </div>
+
+      <div class="modal__content">
+        <div class="field">
+          <label class="label" for="editorTitle">Title</label>
+          <input id="editorTitle" class="input" type="text" placeholder="Optional title" />
+        </div>
+
+        <div class="field">
+          <label class="label" for="editorBody">Body</label>
+          <textarea id="editorBody" class="textarea textarea--editor" rows="10" placeholder="Write here… (markdown-light supported in Thinking)"></textarea>
+        </div>
+
+        <div class="row row--wrap">
+          <div class="field field--inline">
+            <label class="label" for="editorTags">Tags</label>
+            <input id="editorTags" class="input" type="text" placeholder="#tag1, #tag2" />
+          </div>
+
+          <div class="field field--inline" id="editorProjectWrap">
+            <label class="label" for="editorProject">Project</label>
+            <select id="editorProject" class="select"></select>
+          </div>
+        </div>
+
+        <div class="row row--wrap" id="ratingRow">
+          <div class="chipset" role="group" aria-label="Rating">
+            <button class="chip" type="button" data-rating="great">GREAT</button>
+            <button class="chip" type="button" data-rating="good">GOOD</button>
+            <button class="chip" type="button" data-rating="okay">OKAY</button>
+            <button class="chip" type="button" data-rating="off">OFF</button>
+            <button class="chip" type="button" data-rating="bad">BAD</button>
+          </div>
+        </div>
+
+        <div class="card card--sub" id="attachmentsCard">
+          <div class="row row--wrap">
+            <div class="label">Attachments</div>
+            <div class="spacer"></div>
+            <label class="btn btn--tool" for="attachInput">ATTACH</label>
+            <input id="attachInput" class="sr-only" type="file" accept="image/*" />
+          </div>
+          <div class="attachments" id="attachmentsList"></div>
+        </div>
+
+        <div class="card card--sub">
+          <div class="row row--wrap">
+            <button class="btn btn--ghost" id="btnEditorExportMd" type="button">EXPORT MD</button>
+            <button class="btn btn--ghost" id="btnEditorExportJson" type="button">EXPORT JSON</button>
+            <div class="spacer"></div>
+            <button class="btn btn--danger" id="btnEditorDelete" type="button">DELETE</button>
+          </div>
+        </div>
+
+        <div class="preview hidden" id="thinkingPreviewWrap">
+          <div class="row row--wrap">
+            <div class="label">Preview</div>
+            <div class="spacer"></div>
+            <button class="btn btn--ghost" id="btnTogglePreview" type="button" aria-pressed="false">SHOW</button>
+          </div>
+          <div class="preview__body" id="thinkingPreview"></div>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="modal hidden" id="promptModal" role="dialog" aria-modal="true" aria-label="Prompt Pack" aria-hidden="true">
+      <div class="modal__bar">
+        <button class="btn btn--ghost" id="btnPromptClose" type="button">CLOSE</button>
+        <div class="modal__title">Prompt Pack</div>
+        <div class="spacer"></div>
+        <button class="btn btn--ghost" id="btnPromptCopyAll" type="button">COPY ALL</button>
+      </div>
+
+      <div class="modal__content">
+        <div class="card card--sub">
+          <div class="label">Use these as quick commands for ChatGPT (or any AI). Tap COPY, or INSERT into your current editor.</div>
+        </div>
+
+        <div class="prompt-list" id="promptList" aria-label="Prompt list"></div>
+      </div>
+    </section>
+
+    <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
