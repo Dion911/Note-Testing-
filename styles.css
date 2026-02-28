@@ -242,8 +242,21 @@ body::after{
   cursor:pointer; text-align:left; transition:transform var(--dur-med) var(--ease), box-shadow var(--dur-med) var(--ease);
 }
 @media (hover:hover){ .project-card:hover{ transform:translateY(-1px); box-shadow:var(--shadow-contact), var(--shadow-ambient); border-color:var(--hair-2); } }
-.project-card__title{ font-weight:600; line-height:1.25; }
-.project-card__meta{ color:var(--muted); font-size:var(--fs-meta); line-height:var(--lh-meta); }
+.project-card__title { 
+  font-weight: 600; 
+  line-height: 1.25; 
+  text-transform: uppercase; /* Forces uppercase */
+  color: #ffffff !important; /* Forces pure white and overrides any old rules */
+  letter-spacing: 0.5px;
+}
+
+.project-card__meta { 
+  color: rgba(255, 255, 255, 0.6) !important; /* Soft white for the subtitle */
+  font-size: var(--fs-meta); 
+  line-height: var(--lh-meta); 
+  text-transform: uppercase; /* Makes "TAP TO OPEN" uppercase too */
+  letter-spacing: 0.5px;
+}
 
 .projectbar{ display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--hair); padding-bottom:calc(var(--grid) * 1.5); margin-bottom:calc(var(--grid) * 1.5); }
 .projectbar__title{ font-weight:600; }
